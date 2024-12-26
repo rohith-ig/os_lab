@@ -1,4 +1,0 @@
-read;
-alias idk R0;
-idk = P0;
-print idk;
