@@ -1,0 +1,9 @@
+MOV R0, 0
+COME_HERE:
+    PORT P1, R0
+    OUT
+    INR R0
+    MOV R1, 21
+    GT R1, R0
+    JNZ R1, COME_HERE
+HALT

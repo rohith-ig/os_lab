@@ -1,0 +1,5 @@
+IN
+PORT R0,P0
+PORT P1,R0
+OUT
+	
