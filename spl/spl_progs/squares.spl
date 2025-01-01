@@ -1,0 +1,9 @@
+alias counter R0;
+counter = 1;
+alias current R1;
+current = 0;
+while (counter<=6) do
+	current = current + counter * counter;
+	counter = counter + 1;
+	breakpoint;
+endwhile;
