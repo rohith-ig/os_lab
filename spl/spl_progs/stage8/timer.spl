@@ -1,0 +1,2 @@
+print("Timer Interrupt");
+halt;

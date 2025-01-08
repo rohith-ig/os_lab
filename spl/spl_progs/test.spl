@@ -1,0 +1,8 @@
+alias input R1;
+input = 5;
+if (input%2 == 0) then
+	print("Even");
+	halt;
+endif;
+print("odd");
+halt;
