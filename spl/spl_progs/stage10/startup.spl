@@ -22,6 +22,7 @@ loadi(5,18);
 loadi(2,15);
 loadi(3,16);
 
+
 PTBR = PAGE_TABLE_BASE;
 PTLR = 10;
 
