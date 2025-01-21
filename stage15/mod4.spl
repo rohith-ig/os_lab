@@ -1,0 +1,27 @@
+alias fnum R1;
+alias pid R2;
+alias word R3;
+
+if (fnum != 3) then 
+    return;
+endif;
+
+multipush(R1,R2,R3);
+
+fnum = 8;
+
+call MOD_0;
+
+multipop(R1,R2,R3);
+
+print word;
+
+multipush(R1,R2,R3);
+
+fnum = 9;
+
+call MOD_0;
+
+multipop(R1,R2,R3);
+
+return;

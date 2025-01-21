@@ -1,0 +1,4 @@
+MOV R16, "Timer Interrupt"
+PORT P1, R16
+OUT
+IRET

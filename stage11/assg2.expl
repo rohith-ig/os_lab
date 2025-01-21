@@ -1,0 +1,16 @@
+
+int main() {
+	decl
+		int a,d,b,c,temp;
+	enddecl
+	begin
+	a = 10;
+	b = 21;
+	c = a + b;
+	d = a * b;
+	temp = exposcall("Write",-2,c);
+	temp = exposcall("Write",-2,d);
+	return 0;
+	end
+}
+	

@@ -1,0 +1,37 @@
+alias fnum R1;
+alias pid R2;
+alias ret R0;
+
+if (fnum == 8) then 
+    while ([TERMINAL_STATUS_TABLE] != 0) do
+        [PROCESS_TABLE + pid*16 + 4] = WAIT_TERMINAL;
+        multipush(R1, R2);
+        call MOD_5;
+        multipop(R1, R2);
+    endwhile;
+    [TERMINAL_STATUS_TABLE] = 1;
+    [TERMINAL_STATUS_TABLE + 1] = pid;
+    return;
+endif;
+
+if (fnum == 9) then
+    if (pid != [TERMINAL_STATUS_TABLE + 1]) then    
+        ret = -1;
+        return;
+    else 
+        [TERMINAL_STATUS_TABLE] = 0;
+        alias i R3;
+        i = 0;
+        while (i < 16) do 
+            if ([PROCESS_TABLE + i*16 + 4] == WAIT_TERMINAL) then   
+                [PROCESS_TABLE + i*16 + 4] = READY;
+            endif;
+            i = i + 1;
+        endwhile;
+        ret = 1;
+        return;
+    endif;
+else 
+    ret = -1;
+    return;
+endif;
