@@ -1,0 +1,42 @@
+alias fnum R1;
+if (fnum == 1) then
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+    while ([SYSTEM_STATUS_TABLE + 2] == 0) do
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4] = WAIT_MEM;
+        multipush(R1);
+        call MOD_5;
+        multipush(R2);
+    endwhile;
+
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+
+    alias mem R2;
+    mem = 76;
+    while ((mem<128)) do
+        if ([MEMORY_FREE_LIST + mem] == 1) then
+            mem = mem + 1;
+        else 
+            break;
+        endif;
+    endwhile;
+    breakpoint;
+    [MEMORY_FREE_LIST + mem ] = 1;
+    R0 = mem;
+    return;
+endif;
+if (fnum == 2) then
+    alias page R2;
+    [MEMORY_FREE_LIST + page] = 0;
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+    alias i R3;
+    i = 1;
+    while (i<16) do
+        if ([PROCESS_TABLE + i*16 + 4] == WAIT_MEM) then  
+            [PROCESS_TABLE + i*16 + 4] = READY;
+        endif;
+        i = i + 1;
+    endwhile;
+    return;
+endif;
+
+

@@ -45,6 +45,37 @@ loadi(9,22);
 loadi(14,27);
 loadi(15,28);
 
+//load int9 - for Exec
+loadi(20,33);
+loadi(21,34);
+
+// module 1
+loadi(42, 55);
+loadi(43, 56);
+
+// module 2
+loadi(44, 57);
+loadi(45, 58);
+
+// inode user table
+loadi(59, 3);
+loadi(60, 4);
+
+alias i R0;
+i = 0;
+while (i < 128) do
+    if (i < 88) then
+        [MEMORY_FREE_LIST  + i] = 1;
+    else
+        [MEMORY_FREE_LIST + i] = 0;
+    endif;
+    i = i + 1;
+endwhile;
+
+[SYSTEM_STATUS_TABLE + 0] = 1;
+[SYSTEM_STATUS_TABLE + 2] = 40;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+
 // For INIT
 PTBR = PAGE_TABLE_BASE + 20;
 PTLR = 10;

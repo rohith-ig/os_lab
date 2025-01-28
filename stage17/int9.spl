@@ -1,0 +1,108 @@
+alias userSP R0;
+userSP = SP;
+alias pid R1;
+pid = [SYSTEM_STATUS_TABLE + 1];
+
+[PROCESS_TABLE + pid*16 + 13] = SP;
+SP = [PROCESS_TABLE + pid*16 + 11]*512-1;
+[PROCESS_TABLE + pid*16 + 9] = 9;
+
+
+alias arg R2;
+arg = [[PTBR+2*((userSP-4)/512)]*512 + ((userSP-4)%512)];
+alias inode R3;
+alias flag R4;
+flag = 0;
+inode = 0;
+while (inode < MAX_FILE_NUM) do
+    if (arg == [INODE_TABLE + inode*16 + 1]) then
+        if ([INODE_TABLE + inode*16] == EXEC) then  
+            flag = 1;
+            break;
+        endif;
+    endif;
+    inode = inode + 1;
+endwhile;
+
+if (flag == 0) then 
+    [[PTBR+2*((userSP-1)/512)] + ((userSP-1)%512)] = -1;
+    SP = [PROCESS_TABLE + pid*16 + 13];
+    [PROCESS_TABLE + pid*16 + 9] = 0;   
+    ireturn;
+endif;
+
+multipush(R0,R1,R2,R3,R4);
+
+R1 = 3;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+call MOD_1;
+multipop(R0,R1,R2,R3,R4);
+
+alias uapage R5;
+uapage = [PROCESS_TABLE + pid*16 + 11];
+[MEMORY_FREE_LIST + uapage] = [MEMORY_FREE_LIST + uapage] + 1;
+[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
+SP = uapage*512;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] + 4] = RUNNING;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] + 7] = inode;
+
+multipush(R0,R1,R2,R3,R4,R5);
+
+//setting up PT
+[PTBR + 0] = 63;
+[PTBR + 1] = "0100";
+[PTBR + 2] = 64;
+[PTBR + 3] = "0100";
+
+//Heap
+R1 = 1;
+call MOD_2;
+[PTBR + 4] = R0;
+[PTBR + 5] = "0110";
+R1 = 1;
+call MOD_2;
+[PTBR + 6] = R0;
+[PTBR + 7] = "0110";
+
+//Stack
+R1 = 1;
+call MOD_2;
+[PTBR + 16] = R0;
+[PTBR + 17] = "0110";
+R1 = 1;
+call MOD_2;
+[PTBR + 18] = R0;
+[PTBR + 19] = "0110";
+
+multipop(R0,R1,R2,R3,R4,R5);
+
+alias size R6;
+size = ([INODE_TABLE + inode*16 + 2]-1)/512 + 1;
+size = size/512 + 1;
+
+alias i R7;
+i = 0;
+while (i<4) do  
+    if (i<size) then
+        multipush(R0,R1,R2,R3,R4,R5,R6,R7);
+        R1 = 1;
+        call MOD_2;
+        [PTBR + 8 + 2*i] = R0;
+        [PTBR + 9 + 2*i] = "0100";
+        multipop(R0,R1,R2,R3,R4,R5,R6,R7);
+    else 
+        [PTBR + 8 + 2*i] = -1;
+        [PTBR + 9 + 2*i] = "0000";
+    endif;
+    i = i + 1;
+endwhile;  
+i = 0;
+while (i<size) do
+    loadi([(PTBR+8+(2*i))],[INODE_TABLE + inode*16 + 8 + i]);
+    i = i + 1;
+endwhile;
+[[PTBR + 16]*512] = [[PTBR+8]*512 + 1];
+SP = 8*512;
+[PROCESS_TABLE + pid*16 + 9] = 0;
+ireturn;
