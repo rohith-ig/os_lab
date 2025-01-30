@@ -1,0 +1,72 @@
+alias fnum R1;
+
+if (fnum == 2) then
+    alias pid R2;
+    alias ua R3;
+    ua = [PROCESS_TABLE + pid*16 + 11];
+    multipush(R0,R1,R2,R3);
+    R1 = 2;
+    R2 = ua;
+    call MOD_2;
+    multipop(R0,R1,R2,R3);
+    return;
+endif;
+if (fnum == 3) then
+    alias pid R2;
+    multipush(R0,R1,R2);
+    R1 = 4;
+    call MOD_1;
+    multipop(R0,R1,R2);
+    multipush(R0,R1,R2);
+    R1 = 2;
+    call MOD_1;
+    multipop(R0,R1,R2);
+    [PROCESS_TABLE + pid*16 + 4] = TERMINATED;
+    return;
+endif;
+if (fnum == 4) then
+    alias pid R2;
+    alias i R3;
+    alias temp R4;
+    i = 0;
+    while (i<8) do
+        temp = [PTBR+4+2*i];
+        [PTBR + 4 + 2*i] = -1;
+        [PTBR + 4 + 2*i+1] = "0000";
+        i = i + 1;
+        if (temp != -1) then
+            multipush(R0,R1,R2,R3,R4);
+            R1 = 2;
+            R2 = temp;
+            call MOD_2;
+            multipop(R0,R1,R2,R3,R4);
+        endif;
+    endwhile;
+    i = 0;
+    while (i<4) do
+        if (i < 2) then
+            temp = [DISK_MAP_TABLE + pid*10 + 2 + i];
+            if (temp != -1) then
+                multipush(R1,R2,R3,R4);
+                R1 = 4;
+                R2 = temp;
+                call MOD_2;
+                multipop(R1,R2,R3,R4);
+            endif;
+        else
+            temp = [DISK_MAP_TABLE + pid*10 + 8 + (i-2)];
+            if (temp != -1) then
+                multipush(R1,R2,R3,R4);
+                R3 = pid;
+                R1 = 4;
+                R2 = temp;
+                call MOD_2;
+                multipop(R1,R2,R3,R4);
+            endif;
+        endif;
+        i = i + 1;
+    endwhile;
+    return;
+endif;
+
+

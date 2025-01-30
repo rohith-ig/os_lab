@@ -1,0 +1,86 @@
+alias fnum R1;
+if (fnum == 1) then
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+    while ([SYSTEM_STATUS_TABLE + 2] == 0) do
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4] = WAIT_MEM;
+        multipush(R1);
+        call MOD_5;
+        multipush(R2);
+    endwhile;
+
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+
+    alias mem R2;
+    mem = 76;
+    while ((mem<128)) do
+        if ([MEMORY_FREE_LIST + mem] == 1) then
+            mem = mem + 1;
+        else 
+            break;
+        endif;
+    endwhile;
+    breakpoint;
+    [MEMORY_FREE_LIST + mem ] = 1;
+    R0 = mem;
+    return;
+endif;
+if (fnum == 2) then
+    alias page R2;
+    [MEMORY_FREE_LIST + page] = 0;
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+    alias i R3;
+    i = 1;
+    while (i<16) do
+        if ([PROCESS_TABLE + i*16 + 4] == WAIT_MEM) then  
+            [PROCESS_TABLE + i*16 + 4] = READY;
+        endif;
+        i = i + 1;
+    endwhile;
+    return;
+endif;
+if (fnum == 4) then
+    alias block R2;
+    alias pid R3;
+    [DISK_FREE_LIST + pid*10 + block] = [DISK_FREE_LIST + pid*10 + block] - 1;
+    return;
+endif;
+if (fnum == 5) then
+    alias block R2;
+    alias flag R3;
+    alias i R4;
+    alias j R5;
+    i = 0;
+    while (i<15) do
+        j = 4;
+        while (j<8) do
+            if ([DISK_MAP_TABLE + i*10 + j] == block) then
+                flag = [PAGE_TABLE_BASE + 20*i + 8 + 2*(j-4)];
+                if (flag != -1) then
+                    [MEMORY_FREE_LIST + flag] = [MEMORY_FREE_LIST + flag] + 1;
+                    R0 = flag;
+                    return;
+                endif;
+            endif;
+            j = j + 1;
+        endwhile;
+        i = i + 1;
+    endwhile;
+    multipush(R1,R2);
+    R1 = 1;
+    call MOD_2;
+    flag = R0;
+    multipop(R1,R2);
+    multipush(R1,R2,R3,R4);
+    R1 = 2;
+    R4 = block;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = flag;
+    call MOD_4;
+    multipop(R1,R2,R3,R4);
+    R0 = R3;
+    breakpoint;
+    return;
+endif;
+
+
+

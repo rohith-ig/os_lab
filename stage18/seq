@@ -5,3 +5,4 @@ load --int=disk ../stages/stage18/diskint.xsm
 load --int=10 ../stages/stage18/INT10.xsm
 load --int=9 ../stages/stage18/int9.xsm
 load --module 2 ../stages/stage17/mod2.xsm
+load --module 1 ../stages/stage17/mod1.xsm

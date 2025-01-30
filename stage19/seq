@@ -1,0 +1,5 @@
+load --module 1 ../stages/stage19/mod1.xsm
+load --int=9 ../stages/stage19/int9.xsm
+load --module 2 ../stages/stage19/mod2.xsm
+load --exhandler ../stages/stage19/ex.xsm
+load --module 7 ../stages/stage19/boot.xsm

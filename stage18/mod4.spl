@@ -25,6 +25,7 @@ if (fnum == 3) then
     fnum = 8;
     call MOD_0;
     multipop(R1,R2,R3);
+    breakpoint;
     print word;
     multipush(R1,R2,R3);
     fnum = 9;
