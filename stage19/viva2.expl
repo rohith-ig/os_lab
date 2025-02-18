@@ -1,0 +1,62 @@
+type 
+    node {
+        int val;
+        node next;
+    }
+endtype
+
+decl
+    node node,head,tempx,temp1,temp2,temp3,temp4,nil;
+enddecl
+
+int main() {
+    decl 
+        int a,temp,b,i,k,x;
+    enddecl
+    begin
+        temp = initialize();
+        head = alloc();
+        node = head;
+        temp = exposcall("Write",-2,"Enter numebr of nodes :");
+        temp = exposcall("Read",-1,a);
+        i = a;
+        k = a;
+        x = a;
+        while (a>0) do
+            temp = exposcall("Write",-2,"Enter value of node : ");
+            temp = exposcall("Read",-1,b);
+            node.val = b;
+            tempx = alloc();
+            node.next = tempx;
+            node = tempx;
+            a = a - 1;
+        endwhile;
+        temp = exposcall("Write",-2,"linked list : ");
+        node = head;
+        while (i>0) do
+            temp = exposcall("Write",-2,node.val);
+            node = node.next;
+            i = i - 1;
+        endwhile;
+        temp1 = nil;
+        temp2 = head;
+        temp3 = head.next;
+        while (k>0) do
+            temp4 = temp3.next;
+            temp3.next = temp2;
+            temp2.next = temp1;
+            temp1 = temp2;
+            temp2 = temp3;
+            temp3 = temp4;
+            k = k - 1;
+        endwhile;
+        i = x;
+        node = temp1;
+        while ((i)>0) do
+            temp = exposcall("Write",-2,node.val);
+            node = node.next;
+            i = i - 1;
+        endwhile;
+        return 0;
+    end
+}

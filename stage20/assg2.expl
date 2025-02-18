@@ -1,0 +1,51 @@
+type 
+    node {
+        int val;
+        node next;
+    }
+endtype
+
+decl
+    node head,temp1,temp2;
+enddecl
+
+int main() {
+    decl
+        int flag,i,count,pid;
+    enddecl
+    begin
+    flag = 0;
+    i = initialize();
+    i = 1;
+    head = null;
+    while (i<101) do
+        temp2 = alloc();
+        temp2.val = i;
+        temp2.next = null;
+        if (head == null) then
+            head = temp2;
+            temp1 = head;
+        else
+            temp1.next = temp2;
+            temp1 = temp2;
+        endif;
+        i = i + 1;
+    endwhile;
+    temp1 = head;
+    count = 0;
+    pid = exposcall("Fork");
+    while (temp1 != null) do
+        flag = temp1.val;
+        if ((pid == 0) AND ((count%2)==0)) then
+            i = exposcall("Write",-2,temp1.val);
+        else 
+            if (((count%2)!=0) AND (pid !=0)) then
+                i = exposcall("Write",-2,temp1.val);
+            endif;
+        endif;
+        temp1 = temp1.next;
+        count = count + 1;
+    endwhile;
+    return 0;
+    end
+}

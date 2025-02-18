@@ -1,0 +1,41 @@
+alias currPID R0;
+currPID = [SYSTEM_STATUS_TABLE + 1];
+multipush(BP);
+
+//obtaining process table entry
+alias proc R1;
+proc = PROCESS_TABLE + currPID*16;
+[proc + 12] = SP%512;
+[proc + 14] = PTBR;
+[proc + 15] = PTLR;
+
+alias i R2;
+i = currPID + 1;
+alias newPID R3;
+newPID = 0;
+while (i<16) do
+    if ([PROCESS_TABLE + i*16 + 4] == READY || [PROCESS_TABLE + i*16 + 4] == CREATED) then
+        newPID = i;
+        break;
+    endif;
+    i = i + 1;
+endwhile;
+
+//setting kernel stack first
+proc = PROCESS_TABLE + newPID*16;
+SP = [proc + 11]*512 + [proc+12];
+PTBR = [proc + 14];
+PTLR = [proc + 15];
+[SYSTEM_STATUS_TABLE+1] = newPID;
+
+if ([proc + 4] == CREATED) then
+    SP = [proc + 13];
+    BP = [[proc + 11] * 512];
+    [proc + 4] = RUNNING;
+    [proc + 9] = 0;
+    ireturn;
+endif;
+
+[proc+4] = RUNNING;
+multipop(BP);
+return;
