@@ -19,7 +19,7 @@ if (pid == -1) then
 else 
     newPid = pid;
     if ([PTBR + 4] == -1) then
-        multipush(R0,R1);
+        multipush(R0,R1,R2);
         R1 = 1;
         call MEMORY_MANAGER;
         [PTBR + 4] = R0;
@@ -28,7 +28,7 @@ else
         call MEMORY_MANAGER;
         [PTBR + 6] = R0;
         [PTBR + 7] = "0110";
-        multipop(R0,R1);
+        multipop(R0,R1,R2);
     endif;
     //allocating pages for user area and stack
     multipush(R2);

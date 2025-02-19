@@ -25,7 +25,8 @@ while (inode < MAX_FILE_NUM) do
 endwhile;
 
 if (flag == 0) then 
-    [[PTBR+2*((userSP-1)/512)] + ((userSP-1)%512)] = -1;
+    userSP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];
+    [[PTBR+2*((userSP-1)/512)]*512 + ((userSP-1)%512)] = -1;
     SP = [PROCESS_TABLE + pid*16 + 13];
     [PROCESS_TABLE + pid*16 + 9] = 0;   
     ireturn;

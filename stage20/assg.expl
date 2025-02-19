@@ -4,6 +4,8 @@ int main() {
     enddecl
     begin
         temp = exposcall("Fork");
+        write("parent");
+        write(temp);
         if (temp == 0) then
             a = exposcall("Exec","odd.xsm");
         else 

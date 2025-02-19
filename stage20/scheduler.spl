@@ -38,4 +38,5 @@ endif;
 
 [proc+4] = RUNNING;
 multipop(BP);
+breakpoint;
 return;
