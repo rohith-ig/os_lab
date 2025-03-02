@@ -21,7 +21,6 @@ if (sys == 13) then
     multipush(R0,R1,R2);
     call MOD_5;
     multipop(R0,R1,R2);
-    breakpoint;
     [[PTBR + 2*((user-1)/512)]*512 + (user-1)%512] = 0;
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0;
     SP = user;
@@ -38,7 +37,6 @@ if (sys == 14) then
         endif;
         i = i + 1;
     endwhile;
-    breakpoint;
     [[PTBR + 2*((user-1)/512)]*512 + (user-1)%512] = 0;
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0;
     SP = user;

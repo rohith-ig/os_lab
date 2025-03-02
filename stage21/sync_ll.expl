@@ -3,21 +3,27 @@ type
         int val;
         node next;
     }
+    lock {
+        int a;
+    }
 endtype
 
 decl
     node head,temp1,temp2;
+    lock x;
 enddecl
 
 int main() {
     decl
-        int flag,i,count,pid,par,temp;
+        int flag,i,count,pid,par,temp,test;
     enddecl
     begin
     flag = 0;
     i = initialize();
     i = 1;
     head = null;
+    x = alloc();
+    x.a = 0;
     while (i<101) do
         temp2 = alloc();
         temp2.val = i;
@@ -37,22 +43,28 @@ int main() {
     while (temp1 != null) do
         flag = temp1.val;
         if ((pid == 0) AND ((count%2)==0)) then
-            i = exposcall("Write",-2,temp1.val);
+            test = x.a;
+            while (test != 1) do
+                par = exposcall("Getppid");
+                temp = exposcall("Wait",par);
+            endwhile;
+            write(temp1.val);
+            x.a = 0;
             temp = exposcall("Signal");
-            par = exposcall("Getppid");
-            write(par);
-            temp = exposcall("Wait",par);
         else 
             if (((count%2)!=0) AND (pid !=0)) then
-                i = exposcall("Write",-2,temp1.val);
+                test = x.a;
+                while (test != 0) do
+                    temp = exposcall("Wait",pid);
+                endwhile;
+                write(temp1.val);
+                x.a = 1;
                 temp = exposcall("Signal");
-                temp = exposcall("Wait",pid);
             endif;
         endif;
         temp1 = temp1.next;
         count = count + 1;
     endwhile;
     return 0;
-    
     end
 }

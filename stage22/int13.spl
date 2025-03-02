@@ -1,0 +1,76 @@
+alias usp R0;
+alias num R1;
+
+usp = SP;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] = usp;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]*512-1;
+
+num = [[PTBR + 2*((usp-5)/512)]*512 + (usp-5)%512];
+
+if (num == 17) then
+    alias i R2;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 17;
+    i = ([PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]+1)*512-16;
+    alias j R3;
+    alias flag R4;
+    flag = -1;
+    j = 0;
+    while (j<8) do
+        if ([i + 2*j] == -1) then
+            flag = j;
+            break;
+        endif;
+        j = j + 2;
+    endwhile;
+    if (flag == -1) then
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -1;
+    else
+        multipush(R0,R1,R2,R3,R4);
+        R1 = 6;
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        call RESOURCE_MANAGER;
+        R5 = R0;
+        multipop(R0,R1,R2,R3,R4);
+        if (R5 == -1) then
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -2;
+        else
+            [i + flag] = 1;
+            [i + flag + 1] = R5;
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = j;
+        endif;
+    endif;
+endif;
+
+if (num == 18) then
+    alias i R2;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 18;
+    alias descr R3;
+    descr = [[PTBR + 2*((usp-4)/512)]*512 + (usp-4)%512];
+    if ((descr>7)||(descr<0) || (([([PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]+1)*512-16 + 2*descr])!=1)) then
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -1;
+    else
+        i = ([PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]+1)*512-16;
+        multipush(R0,R1,R2,R3);
+        R1 = 7;
+        R2 = [i + 2*descr + 1];
+        R3 = [SYSTEM_STATUS_TABLE+1];
+        call RESOURCE_MANAGER;
+        multipop(R0,R1,R2,R3);
+        [i+2*descr] = -1;
+        [i+2*descr+1] = -1;
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = 0;
+    endif;
+endif;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];
+breakpoint;
+ireturn;
+
+
+        
+
+        
+            
+
+
