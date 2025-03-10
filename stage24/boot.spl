@@ -95,6 +95,15 @@ loadi(62, 5);
 // disk free list
 loadi(61, 2);
 
+// module 3
+loadi(46, 59);
+loadi(47, 60);
+
+// int 5
+loadi(12, 25);
+loadi(13, 26);
+
+
 // memory free list initialization
 alias i R0;
 i = 0;
@@ -191,6 +200,7 @@ while (i < MAX_FILE_NUM) do
     [FILE_STATUS_TABLE + i*4 + 1] = -1;
     i = i + 1;
 endwhile;
+
 i = 0;
 while (i<4) do
     [BUFFER_TABLE + i*4 + 0] = -1;
@@ -198,4 +208,12 @@ while (i<4) do
     [BUFFER_TABLE + i*4 + 2] = -1;
     i = i + 1;
 endwhile;
+
+i = 0;
+while (i < MAX_OPENFILE_NUM) do
+    [OPEN_FILE_TABLE + i * 4 + 0] = -1;
+    [OPEN_FILE_TABLE + i * 4 + 1] = 0;
+    i = i + 1;
+endwhile;
+
 return;

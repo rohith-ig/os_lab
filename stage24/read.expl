@@ -1,0 +1,23 @@
+int main() {
+    decl
+        int a,temp,temp2;
+        str s;
+        str b;
+    enddecl
+    begin
+        write("Enter :");
+        read(s);
+        temp = exposcall("Open",s);
+        if (temp == 0) then
+            temp2 = exposcall("Fork");
+            a = 0;
+            while (a == 0) do
+            a = exposcall("Read",temp,b);
+            if (a == 0) then
+                write(b);
+            endif;
+        endwhile;
+        endif;        
+        return 0;
+    end
+}

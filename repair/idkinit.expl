@@ -1,0 +1,14 @@
+int main() {
+    decl
+        int i;
+    enddecl
+    begin
+    write("skibidi");
+    i = 0;
+    while (i < 100) do
+        write(i);
+        i = i + 1;
+    endwhile;
+    return 0;
+    end
+}

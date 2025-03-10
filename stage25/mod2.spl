@@ -39,6 +39,23 @@ if (fnum == 2) then
     return;
 endif;
 
+if (fnum == 3) then
+    alias i R3;
+    i = DISK_FREE_AREA;
+    while (i < DISK_SWAP_AREA) do
+        if ([DISK_FREE_LIST + i] == 0) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (i == DISK_SWAP_AREA) then
+        R0 = -1;
+    else 
+        R0 = i;
+    endif;
+    return;
+endif;
+
 if (fnum == 4) then
     alias block R2;
     alias pid R3;

@@ -21,6 +21,7 @@ int main() {
                 temp = exposcall("Exec",s);
                 if (temp == -1) then
                     write("Bad command");
+                    break;
                 endif;
             endif;
         endwhile;

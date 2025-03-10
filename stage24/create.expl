@@ -1,0 +1,15 @@
+int main() {
+    decl
+        int temp;
+        str a;
+        int next;
+    enddecl
+    begin
+    write("Enter name of file : ");
+    read(a);
+    temp = exposcall("Create",a,0);
+    temp = exposcall("Open",a); 
+    next = exposcall("Close",temp);
+    return 0;
+    end
+}

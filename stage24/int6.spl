@@ -1,0 +1,105 @@
+alias usp R0;
+alias pt R1;
+pt = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16;
+usp = SP;
+[pt + 9] = 7;
+SP = [pt + 11]*512 - 1;
+[pt + 13] = usp;
+
+alias fd R2;
+alias word R3;
+fd = [[PTBR + 2*((usp-4)/512)]*512 + (usp-4)%512];
+word = [[PTBR + 2*((usp-3)/512)]*512 + (usp-3)%512];
+if (fd == -1) then  
+    multipush(R0,R1,R2,R3);
+    R1 = 4;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    call DEVICE_MANAGER;
+    multipop(R0,R1,R2,R3);
+else
+    if (fd<0 || fd>7) then
+        SP = usp;
+        [pt + 9] = 0;
+        ireturn;
+    endif;
+    alias res R4;
+    res = [pt + 11]*512 + RESOURCE_TABLE_OFFSET + 2*fd;
+    if ([res] != FILE) then
+        SP = usp;
+        [pt + 9] = 0;
+        ireturn;
+    endif;
+    alias open R5;
+    alias inode R6;
+    open = OPEN_FILE_TABLE + [res+1]*4;
+    inode = [open]; 
+    multipush(R0,R1,R2,R3,R4,R5,R6);
+    R1 = 4;
+    R2 = R6;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call RESOURCE_MANAGER;
+    if (R0 == -1) then
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -1;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0;
+        ireturn;
+    endif;
+    multipop(R0,R1,R2,R3,R4,R5,R6);
+    alias seek R7;
+    alias phy R8;
+    seek = open + 2;
+    phy = [PTBR + 2*(word/512)]*512 + word%512;
+    if (inode == INODE_ROOT) then
+        if ([seek] == 480) then
+            multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10);
+            R1 = 5;
+            R2 = R6;
+            R3 = [SYSTEM_STATUS_TABLE + 1];
+            call RESOURCE_MANAGER;
+            multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10);
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -2;
+            SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];
+            [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0;
+            ireturn;     
+        endif;
+        [phy] = [ROOT_FILE + [seek]];
+        [seek] = [seek] + 1;
+    else
+        if ([seek] == [INODE_TABLE + inode*16 + 2]) then
+            multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10);
+            R1 = 5;
+            R2 = R6;
+            R3 = [SYSTEM_STATUS_TABLE + 1];
+            call RESOURCE_MANAGER;
+            multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10);
+            breakpoint;
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -2;
+            SP = usp;
+            [pt + 9] = 0;
+            ireturn; 
+        endif;
+        alias block R9;
+        alias offset R10;
+        block = [INODE_TABLE + inode*16 + 8 + ([seek]/512)];
+        offset = [seek]%512;
+        multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10);
+        R1 = 2;
+        R2 = block;
+        R3 = offset;
+        R4 = phy;
+        call FILE_MANAGER;
+        multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10);
+        [seek] = [seek] + 1;
+    endif; 
+    multipush(R0,R1,R2,R3);
+    R1 = 5;
+    R2 = R6;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call RESOURCE_MANAGER;
+    multipop(R0,R1,R2,R3);
+    [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = 0;
+endif;
+SP = usp;
+[pt + 9] = 0;
+ireturn;
+

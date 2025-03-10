@@ -2,6 +2,37 @@ alias fnum R1;
 alias pid R2;
 alias ret R0;
 
+if (fnum == 1) then
+    alias buf R2;
+    alias pid R3;
+    while ([BUFFER_TABLE + buf*4 +2] != -1) do
+        [PROCESS_TABLE + pid*16 + 4] = WAIT_BUFFER;
+        [PROCESS_TABLE + pid*16 + 5] = buf;
+        multipush(R0,R1,R2,R3);
+        call MOD_5;
+        multipush(R0,R1,R2,R3);
+    endwhile;
+    [BUFFER_TABLE + buf*4 + 2] = pid;
+    return;
+endif;
+
+if (fnum == 2) then
+    alias buf R2;
+    alias pid R3;
+    [BUFFER_TABLE + buf*4 + 2] = -1;
+    alias i R4;
+    i = 0;
+    while (i<16) do
+        if ([PROCESS_TABLE + i*16 + 4] == WAIT_BUFFER && [PROCESS_TABLE + i*16 + 5] == buf) then
+            [PROCESS_TABLE + i*16 + 4] = READY;
+            [PROCESS_TABLE + i*16 + 5] = -1;
+        endif;
+        i = i + 1;
+    endwhile;
+    R0 = 0;
+    return;
+endif;
+
 if (fnum == 3) then
     while ([DISK_STATUS_TABLE] != 0) do
         [PROCESS_TABLE + pid*16 + 4] = WAIT_DISK;
@@ -17,6 +48,7 @@ endif;
 if (fnum == 4) then
     alias i R2;
     alias pid R3;
+    breakpoint;
     while ([FILE_STATUS_TABLE + i*4 + 0] != -1) do   
         [PROCESS_TABLE + pid*16 + 4] = WAIT_FILE;
         [PROCESS_TABLE + pid*16 + 5] = i;

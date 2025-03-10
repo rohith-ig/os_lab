@@ -1,34 +1,28 @@
-//loading bootmodule
+
 loadi(54,67);
 loadi(55,68);
 
-// load idle process from disk blocks 11-12 to memory 69-70
 loadi(69, 11);
 loadi(70, 12);
 
-//setting stack pointer to top of kernel stack of idle process
 
 SP = 82*512 - 1;
-
 call BOOT_MODULE;
+breakpoint;
 
 PTBR = PAGE_TABLE_BASE;
 PTLR = 10;
 
-//PAGE TABLE FOR IDLE
-// Library
 [PTBR + 0] = 63;
 [PTBR + 1] = "0100";
 [PTBR + 2] = 64;
 [PTBR + 3] = "0100";
 
-// Heap
 [PTBR + 4] = 78;
 [PTBR + 5] = "0110";
 [PTBR + 6] = 79;
 [PTBR + 7] = "0110";
 
-// Code
 [PTBR + 8] = 69;
 [PTBR + 9] = "0100";
 [PTBR + 10] = 70;
@@ -38,7 +32,6 @@ PTLR = 10;
 [PTBR + 14] = -1;
 [PTBR + 15] = "0000";
 
-// Stack
 [PTBR + 16] = 81;
 [PTBR + 17] = "0110";
 [PTBR + 18] = -1;
@@ -46,7 +39,6 @@ PTLR = 10;
 
 [81 * 512] = [69 * 512 + 1];
 
-// setting up process table for IDLE
 [PROCESS_TABLE + 1] = 0;
 [PROCESS_TABLE + 4] = RUNNING;
 [PROCESS_TABLE + 11] = 82;

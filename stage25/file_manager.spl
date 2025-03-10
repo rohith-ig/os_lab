@@ -1,0 +1,141 @@
+alias ret R0;
+alias num R1;
+
+if (num == 1 || num == 2) then
+    alias block R2;
+    alias offset R3;
+    alias word R4;
+    alias buf R5;
+    buf = block%4;
+    multipush(R0,R1,R2,R3,R4,R5);
+    R1 = 1;
+    R2 = buf;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call RESOURCE_MANAGER;
+    multipop(R0,R1,R2,R3,R4,R5);
+    if ([BUFFER_TABLE + buf*4 + 0] != block) then
+        if ([BUFFER_TABLE + buf*4 + 1] == 1) then   
+            multipush(R0,R1,R2,R3,R4,R5);
+            R1 = 1;
+            R2 = [SYSTEM_STATUS_TABLE + 1];
+            R3 = 71 + buf;
+            R4 = [BUFFER_TABLE + buf*4 + 0];
+            call DEVICE_MANAGER;
+            multipop(R0,R1,R2,R3,R4,R5);
+            [BUFFER_TABLE + buf*4 + 1] = 0;
+        endif;
+        multipush(R0,R1,R2,R3,R4,R5);
+        R1 = 2;
+        R4 = block;
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        R3 = 71 + buf;
+        call DEVICE_MANAGER;
+        multipop(R0,R1,R2,R3,R4,R5);
+        [BUFFER_TABLE + buf*4 + 0] = block;
+    endif;
+    if (num == 1) then
+        [(71 + buf)*512 + offset] = word;
+        [BUFFER_TABLE + buf*4 + 1] = 1;
+    else
+        [word] = [(71 + buf)*512 + offset];
+    endif;
+    multipush(R0,R1,R2,R3,R4,R5);
+    R1 = 2;
+    R2 = buf;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call RESOURCE_MANAGER;
+    multipop(R0,R1,R2,R3,R4,R5);  
+    return;
+endif;
+
+
+if (num == 3) then  
+    alias filename R2;
+    alias i R3;
+    i = 0;
+    while (i < 60 && [INODE_TABLE + i*16 + 1] != filename) do
+        i = i + 1;
+    endwhile;
+    if (i == 60) then
+        print("not found");
+        ret = -1;
+        return;
+    endif;
+    multipush(R1,R2,R3);
+    R1 = 4;
+    R2 = R3;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call RESOURCE_MANAGER;
+    if (R0 == -1) then
+        return;
+    endif;
+    multipop(R1,R2,R3);
+    alias inode R4;
+    inode = INODE_TABLE + i*16;
+    if ([inode] != DATA && [inode] != ROOT) then
+        R1 = 5;
+        R2 = R3;
+        R3 = [ SYSTEM_STATUS_TABLE + 1];
+        call RESOURCE_MANAGER;
+        R0 = -1;
+        return;
+    endif;
+    alias j R5;
+    j = 0;
+    while (j < MAX_OPENFILE_NUM) do
+        if ([OPEN_FILE_TABLE + j*4] == -1) then
+            break;
+        else 
+            j = j + 1;
+        endif;
+    endwhile;
+    if (j == MAX_OPENFILE_NUM) then
+        ret = -2;
+        return;
+    endif;
+    if (filename == "root") then
+        [OPEN_FILE_TABLE + j*4] = INODE_ROOT;
+    else
+        [OPEN_FILE_TABLE + j*4] = i;
+        if ([FILE_STATUS_TABLE + i*4 + 1] == -1) then
+            [FILE_STATUS_TABLE + i*4 + 1] = 1;
+        else
+            [FILE_STATUS_TABLE + i*4 + 1] = [FILE_STATUS_TABLE + i*4 + 1] + 1;
+        endif;
+    endif;
+    [OPEN_FILE_TABLE + j*4 + 1] = 1;
+    [OPEN_FILE_TABLE + j*4 + 2] = 0;
+    multipush(R1,R2,R3,R4,R5);
+    R1 = 5;
+    R2 = R3;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5);
+    ret = j;
+    return;
+endif;
+
+if (num == 4) then  
+    alias open R2;
+    alias inode R3;
+    inode = [OPEN_FILE_TABLE + open*4];
+    [OPEN_FILE_TABLE + open*4 + 1] = [OPEN_FILE_TABLE + open*4 + 1] - 1;
+    if ([OPEN_FILE_TABLE + open*4 + 1] == 0) then
+        alias j R4;
+        j = 0;
+        while (j<4) do
+            [OPEN_FILE_TABLE + open*4 + j] = -1;
+            j = j + 1;
+        endwhile;
+        if ([INODE_TABLE + inode*16 + 1] != "root") then
+            [FILE_STATUS_TABLE + inode*4 + 1] = [FILE_STATUS_TABLE + inode*4 + 1] - 1;
+            if ([FILE_STATUS_TABLE + inode*4 + 1] == 0) then
+                [FILE_STATUS_TABLE + inode*4 + 1] = -1;
+            endif;  
+        endif;
+    endif;
+    return;
+endif;  
+    
+
+
