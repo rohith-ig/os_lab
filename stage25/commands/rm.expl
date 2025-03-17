@@ -1,0 +1,14 @@
+int main() {
+    decl
+        int a,temp,k;
+        str b;
+    enddecl
+    begin
+        read(b);
+        a = exposcall("Delete",b);
+        if (a != 0) then
+            write("Failed");
+        endif;
+        return 0;
+    end
+}

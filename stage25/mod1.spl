@@ -129,39 +129,39 @@ if (fnum == 4) then
 endif;
 
 if (fnum == 5) then
-    alias i R1;
-    alias pid R2;
+    alias i R2;
+    alias pid R3;
     i = 0;
     while (i < MAX_FILE_NUM) do   
         if ([INODE_TABLE + i*16 + 1] != -1) then
-            multipush(R1,R2);
+            multipush(R1,R2,R3);
             R3 = pid;
             R2 = i;
             R1 = 4;
             call RESOURCE_MANAGER;
-            multipop(R1,R2);
+            multipop(R1,R2,R3);
         endif;
         i = i + 1;
     endwhile;
     i = 2;
     while (i < MAX_PROC_NUM - 1) do
         if (i != pid && [PROCESS_TABLE + i*16 + 4] != TERMINATED) then
-            multipush(R1,R2);
+            multipush(R1,R2,R3);
             R2 = i;
             R1 = 3;
-            multipop(R1,R2);
+            multipop(R1,R2,R3);
         endif;
         i = i + 1;
     endwhile;
     i = 0;
     while (i < MAX_FILE_NUM) do   
         if ([INODE_TABLE + i*16 + 1] != -1) then
-            multipush(R1,R2);
+            multipush(R1,R2,R3);
             R3 = pid;
             R2 = i;
             R1 = 5;
             call RESOURCE_MANAGER;
-            multipop(R1,R2);
+            multipop(R1,R2,R3);
         endif;
         i = i + 1;
     endwhile;

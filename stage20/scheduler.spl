@@ -1,14 +1,14 @@
 alias currentPID R0;
-alias process_table_entry R1;
+alias pt R1;
 
 currentPID = [SYSTEM_STATUS_TABLE + 1];
-process_table_entry = PROCESS_TABLE + 16 * currentPID;
+pt = PROCESS_TABLE + 16 * currentPID;
 
 multipush(BP);
 
-[process_table_entry + 12] = SP % 512;
-[process_table_entry + 14] = PTBR;
-[process_table_entry + 15] = PTLR;
+[pt + 12] = SP % 512;
+[pt + 14] = PTBR;
+[pt + 15] = PTLR;
 
 alias i R2;
 alias state R3;
@@ -25,22 +25,22 @@ while (i < 16) do
     i = i + 1;
 endwhile;
 
-process_table_entry = PROCESS_TABLE + (newPID * 16);
-SP = [process_table_entry + 11] * 512 + [process_table_entry + 12];
-PTBR = [process_table_entry + 14];
-PTLR = [process_table_entry + 15];
+pt = PROCESS_TABLE + (newPID * 16);
+SP = [pt + 11] * 512 + [pt + 12];
+PTBR = [pt + 14];
+PTLR = [pt + 15];
 
 [SYSTEM_STATUS_TABLE + 1] = newPID;
 
 if (state == CREATED) then
-    SP = [process_table_entry + 13];
-    BP = [[process_table_entry + 11] * 512];
-    [process_table_entry + 4] = RUNNING;
-    [process_table_entry + 9] = 0; // mode flag
+    SP = [pt + 13];
+    BP = [[pt + 11] * 512];
+    [pt + 4] = RUNNING;
+    [pt + 9] = 0; 
     ireturn;
 endif;
 
-[process_table_entry + 4] = RUNNING;
+[pt + 4] = RUNNING;
 
 multipop(BP);
 

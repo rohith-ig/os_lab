@@ -1,0 +1,28 @@
+int main() {
+    decl
+        int a,b,c,f,temp;
+        str d,e;
+    enddecl
+    begin
+        read(e);
+        read(a);
+        b = exposcall("Create",e,a);
+        b = exposcall("Open",e);
+        f = exposcall("Seek",b,2048);
+        c = 2500;
+        while (c < 3000) do
+            f = exposcall("Write",b,c);
+            c = c + 1;
+        endwhile;
+        f = exposcall("Seek",b,-1); 
+        while (f != -2) do 
+            temp = exposcall("Read",b,e);
+            write(e);
+            f = exposcall("Seek",b,-2);
+            if (f == -2) then
+                break;
+            endif;
+        endwhile;
+        return 0;
+    end
+}

@@ -9,16 +9,15 @@ int main() {
     a = exposcall("Create",b,0);
     a = exposcall("Open",b);
     i = 0;
-    while (i < 2000) do
-        temp = exposcall("Write",a,"word");
+    while (i < 500) do
+        temp = exposcall("Write",a,"niga");
+        if (temp != 0) then
+            write("fail");
+            break;
+        endif;
+        write(temp);
         i = i + 1;
     endwhile;
-    if (temp == 0) then
-        write("write done");
-    else
-        write("write fail");
-        write(temp);
-    endif;
     return 0;
     end
 }

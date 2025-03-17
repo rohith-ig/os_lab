@@ -1,0 +1,78 @@
+alias usp R0;
+alias pt R1;
+pt = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16;
+usp = SP;
+SP = [pt + 11]*512 - 1;
+[pt + 13] = usp;
+
+alias sys R2;
+sys = [[PTBR + 2*((usp-5)/512)]*512 + (usp-5)%512];
+
+if (sys == 2) then  
+    [pt + 9] = 2;
+    alias base R4;
+    base = [pt+11]*512 + RESOURCE_TABLE_OFFSET;
+    alias i R3;
+    i = 0;
+    while (i < 8) do
+        if ([base + i*2] == -1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (i == 8) then
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -3;
+    else
+        alias open R5;
+        alias fname R6;
+        fname = [[PTBR + 2*((usp-4)/512)]*512 + (usp-4)%512];
+        multipush(R0,R1,R2,R3,R4,R6);
+        R1 = 3;
+        R2 = fname;
+        call FILE_MANAGER;
+        R5 = R0;
+        multipop(R0,R1,R2,R3,R4,R6);
+        if (open < 0) then
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = open;
+        else
+            [base + i] = FILE;
+            [base + i + 1] = open;
+            print("opened");
+            print(open);
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = i;
+        endif;
+    endif;
+endif;
+
+if (sys == 3) then
+    alias res R4;
+    res = [[PTBR + 2*((usp-4)/512)]*512 + (usp-4)%512];
+    [pt + 9] = 3;
+    if (res < 0 || res > 7) then
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -1;
+    else
+        alias base R3;
+        base = [pt + 11]*512 + RESOURCE_TABLE_OFFSET + 2*res;
+        if ([base] != FILE) then
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -1;
+        else
+            alias open R5;
+            open = [base + 1];
+            multipush(R0,R1,R2,R3,R4,R5);
+            R1 = 4;
+            R2 = open;
+            call FILE_MANAGER;
+            multipop(R0,R1,R2,R3,R4,R5);
+            [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = 0;
+        endif;
+    endif;
+endif;
+
+
+SP = usp;
+[pt + 9] = 0;
+ireturn;
+
+            
+
+

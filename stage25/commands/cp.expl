@@ -1,0 +1,28 @@
+int main() {
+    decl
+        int a,temp,k,n;
+        str x,b,c;
+    enddecl
+    begin
+        read(x);
+        read(b);
+        a = exposcall("Open",x);
+        if (a < 0) then
+            write("Failed");
+        endif;
+        k = exposcall("Open",b);
+        if (k < 0) then
+            write("Failed");
+        endif;
+        while (1 == 1) do
+            temp = exposcall("Read",a,c);
+            if (temp != 0) then
+                break;
+            endif;
+            n = exposcall("Write",k,c);
+        endwhile;
+        temp = exposcall("Close",a);
+        temp = exposcall("Close",k);
+        return 0;
+    end
+}

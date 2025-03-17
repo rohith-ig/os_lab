@@ -76,7 +76,7 @@ if (num == 4) then
                 multipop(R0,R1,R2,R3,R4);
                 if ([FILE_STATUS_TABLE + i*4 + 1] != -1) then
                     multipush(R0,R1,R2,R3,R4);
-                    R1 = 4;
+                    R1 = 5;
                     R2 = i;
                     R3 = [SYSTEM_STATUS_TABLE + 1];
                     call MOD_0;

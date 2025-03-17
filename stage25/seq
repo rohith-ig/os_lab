@@ -22,5 +22,5 @@ load --int=11 ../stages/stage21/int11.xsm
 load --int=10 ../stages/stage20/int10.xsm
 load --int=4 ../stages/stage23/int4.xsm
 load --int=14 ../stages/stage22/int14.xsm
-load --int=5 ../stages/stage24/int5.xsm
+load --int=5 ../stages/stage25/int5n.xsm
 load --int=13 ../stages/stage22/int13.xsm
