@@ -1,0 +1,65 @@
+alias usp R0;
+alias pt R1;
+
+
+pt = PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16;
+[pt + 9] = 27;
+
+usp = SP;
+[pt + 13] = usp;
+SP = [pt+11]*512-1;
+
+alias ret R2;
+ret = [PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512;
+
+if ([SYSTEM_STATUS_TABLE+1] != 1) then
+    [pt + 9] = 0;
+    [ret] = -2;
+    SP = usp;
+    ireturn;
+endif;
+
+alias uname R3;
+uname = [[PTBR + 2*((usp-4)/512)]*512 + (usp-4)%512];
+alias i R5; 
+i = 0;
+while (i < MAX_USER_NUM) do
+    if ([USER_TABLE + i*2] == uname) then
+        break;
+    else
+        i = i + 1;
+    endif;
+endwhile;
+if (i == MAX_USER_NUM) then
+    [pt + 9] = 0;
+    [ret] = -1;
+    SP = usp;
+    ireturn;
+endif;  
+alias pwd R4;
+pwd = [[PTBR + 2*((usp-3)/512)]*512 + (usp-3)%512];
+encrypt R4;
+
+if (pwd != [USER_TABLE + i*2 + 1]) then
+    [pt + 9] = 0;
+    [ret] = -1;
+    SP = usp;
+    ireturn;
+endif; 
+breakpoint;
+[PROCESS_TABLE + 32 + 4] = CREATED;
+[PROCESS_TABLE + 32 + 3] = i;
+
+[pt + 4] = WAIT_PROCESS;
+[pt + 5] = 2;
+
+
+[SYSTEM_STATUS_TABLE + 0] = i;
+
+multipush(R0,R1);
+call MOD_5;
+multipop(R0,R1);
+
+SP = usp;
+[pt + 9] = 0;
+ireturn;

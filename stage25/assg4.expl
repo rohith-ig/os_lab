@@ -104,17 +104,19 @@ int main()
 
   begin
     pid1=exposcall("Fork");
+    write("ok1");
     if(pid1!=0) then
       pid2=exposcall("Fork");
+      write("ok first ch");
       if(pid2!=0) then
         //Store the numbers into "temp1.dat"
         x=store("temp1.dat", 1);
-
+        write("ok store second chil");
         x=exposcall("Wait", pid2);
       else
         //Store the numbers into "temp2.dat"
         x=store("temp2.dat", 2);
-
+        write("ok store pfirst chi exit");
         x=exposcall("Exit");
       endif;
 
@@ -138,14 +140,11 @@ int main()
 
       //Merge "temp3.dat" and "temp4.dat" into "tempb.dat"
       x=merge("tempb.dat", "temp3.dat", "temp4.dat");
-
       x=exposcall("Exit");
     endif;
-
     //Merge "tempa.dat" and "tempb.dat" into "merge.dat"
     //which contains numbers from 1 to 2048 in sorted order
     x=merge("merge.dat", "tempa.dat", "tempb.dat");
-
     return 1;
   end
 }

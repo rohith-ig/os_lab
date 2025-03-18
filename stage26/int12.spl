@@ -1,0 +1,39 @@
+alias usp R0;
+alias pt R1;
+
+pt = PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16;
+[pt + 9] = 28;
+
+usp = SP;
+[pt + 13] = usp;
+SP = [pt+11]*512-1;
+
+alias ret R2;
+ret = [PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512;
+
+if ([SYSTEM_STATUS_TABLE + 1] != 2) then
+    SP = usp;
+    [ret] = -1;
+    [pt + 9] = 0;
+    ireturn;
+endif;
+
+multipush(R0,R1,R2);
+R1 = 5;
+R2 = 2;
+call PROCESS_MANAGER;
+multipop(R0,R1,R2);
+
+[pt + 4] = TERMINATED;
+
+alias ep R3;
+ep = [[PTBR + 8]*512 + 1];
+[[PTBR + 16]*512 + 0] = ep;
+
+[pt + 13] = 4096;
+
+[PROCESS_TABLE + 16 + 4] = READY;
+
+[SYSTEM_STATUS_TABLE] = 0;
+
+call MOD_5;

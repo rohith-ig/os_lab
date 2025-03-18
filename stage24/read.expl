@@ -7,7 +7,9 @@ int main() {
     begin
         write("Enter :");
         read(s);
+        write(s);
         temp = exposcall("Open",s);
+        write(temp);
         if (temp == 0) then
             temp2 = exposcall("Fork");
             a = 0;
@@ -15,6 +17,10 @@ int main() {
             a = exposcall("Read",temp,b);
             if (a == 0) then
                 write(b);
+            endif;
+            if (a < 0) then
+                write(a);
+                write("sk");
             endif;
         endwhile;
         endif;        

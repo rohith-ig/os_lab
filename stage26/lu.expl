@@ -1,0 +1,16 @@
+int main() {
+    decl
+        int a,b,c;
+    enddecl
+    begin
+        a = 0;
+        while (a<16) do
+            b = exposcall("Getuname",a);
+            if (b != -1) then
+                write(b);
+            endif;
+            a = a + 1;
+        endwhile;
+        return 0;
+    end
+}

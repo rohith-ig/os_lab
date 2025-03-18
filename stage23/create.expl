@@ -6,7 +6,7 @@ int main() {
     begin
     write("Enter name of file : ");
     read(a);
-    temp = exposcall("Create",a,0);
+    temp = exposcall("Create",a,1);
     breakpoint;
     return 0;
     end

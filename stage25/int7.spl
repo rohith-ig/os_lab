@@ -37,6 +37,12 @@ else
     alias inode R6;
     open = OPEN_FILE_TABLE + [res+1]*4;
     inode = [open]; 
+    if ([SYSTEM_STATUS_TABLE] != ROOT && [INODE_TABLE + inode*16 + 3] != [SYSTEM_STATUS_TABLE] && [INODE_TABLE + inode*16 + 4] != OPEN) then
+        [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -3;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;
+    endif;
     multipush(R0,R1,R2,R3,R4,R5,R6);
     R1 = 4;
     R2 = R6;

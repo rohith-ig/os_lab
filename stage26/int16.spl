@@ -1,0 +1,175 @@
+alias usp R0;
+alias pt R1;
+
+pt = PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16;
+[pt + 9] = 28;
+
+usp = SP;
+[pt + 13] = usp;
+SP = [pt+11]*512-1;
+
+alias ret R2;
+ret = [PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512;
+
+alias sys R3;
+sys = [[PTBR + 2*((usp-5)/512)]*512 + (usp-5)%512];
+
+alias uname R4;
+uname = [[PTBR + 2*((usp-4)/512)]*512 + (usp-4)%512];
+
+if (sys == 22) then
+    [pt + 9] = 22;
+    if ([SYSTEM_STATUS_TABLE] != 1 || [SYSTEM_STATUS_TABLE + 1] != 2) then
+        [ret] = -2;
+        SP = usp;
+        [pt + 9] = 0;
+        ireturn;
+    endif;
+    alias pwd R5;
+    pwd = [[PTBR + 2*((usp-3)/512)]*512 + (usp-3)%512];
+    alias i R6;
+    i = 0;
+    while (i < MAX_USER_NUM) do
+        if ([USER_TABLE + i*2] == uname) then
+            [ret] = -1;
+            [pt + 9] = 0;
+            SP = usp;
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+    i = 0;
+    while (i < MAX_USER_NUM) do
+        if ([USER_TABLE + i*2] == -1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (i == MAX_USER_NUM) then
+        [ret] = -3;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;  
+    endif;
+    encrypt pwd;
+    [USER_TABLE + i*2] = uname;
+    [USER_TABLE + i*2 + 1] = pwd;
+    [ret] = 0;
+endif;   
+
+if (sys == 23) then
+    [pt + 9] = 23;
+    if ([SYSTEM_STATUS_TABLE] != 1 || [SYSTEM_STATUS_TABLE + 1] != 2) then
+        [ret] = -2;
+        SP = usp;
+        [pt + 9] = 0;
+        ireturn;
+    endif;
+    if (uname == "root" || uname == "kernel") then
+        [ret] = -2;
+        SP = usp;
+        [pt + 9] = 0;
+        ireturn;
+    endif;
+    alias i R5;
+    i = 0;
+    while (i < MAX_USER_NUM) do
+        if ([USER_TABLE + i*2] == uname) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (i == MAX_USER_NUM) then
+        [ret] = -1;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;  
+    endif;
+    alias j R6;
+    j = 0;
+    while (j < MAX_FILE_NUM) do
+        if ([ROOT_FILE + j*8 + 3] == uname) then
+            [ret] = -3;
+            [pt + 9] = 0;
+            SP = usp;
+            ireturn;   
+        endif;
+        j = j + 1;
+    endwhile;
+    [USER_TABLE + i*2] = -1;
+    [USER_TABLE + i*2] = -1;
+    [ret] = 0;
+endif;
+
+if (sys == 24) then
+    [pt + 9] = 24;
+    if ([SYSTEM_STATUS_TABLE + 1] != 2) then
+        [ret] = -2;
+        SP = usp;
+        [pt + 9] = 0;
+        ireturn;
+    endif;
+    alias pwd R5;
+    pwd = [[PTBR + 2*((usp-3)/512)]*512 + (usp-3)%512];
+    alias i R6;
+    i = 0;
+    while (i < MAX_USER_NUM) do
+        if ([USER_TABLE + i*2] == uname) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (i == MAX_USER_NUM) then
+        [ret] = -2;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;  
+    endif;
+    if ([SYSTEM_STATUS_TABLE] != i && [SYSTEM_STATUS_TABLE] != ROOT) then
+        [ret] = -1;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;
+    endif;
+    encrypt pwd;
+    [USER_TABLE + i*2 + 1] = pwd;
+    [ret] = 0;
+endif; 
+
+if (sys == 26) then 
+    [pt + 9] = 24;
+    alias i R5;
+    i = 0;
+    while (i< MAX_USER_NUM) do
+        if ([USER_TABLE + i*2] == uname) then
+            [ret] = i;
+            [pt + 9] = 0;
+            SP = usp;
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+    [ret] = -1;
+endif;
+
+if (sys == 25) then 
+    [pt + 9] = 25;
+    if (uname > 15 || uname < 0) then
+        [ret] = -1;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;
+    endif;
+    if ([USER_TABLE + uname*2] == -1) then
+        [ret] = -1;
+        [pt + 9] = 0;
+        SP = usp;
+        ireturn;
+    endif;        
+    [ret] = [USER_TABLE + uname*2];
+endif;
+
+[pt + 9] = 0;
+SP = usp;
+ireturn;   
+

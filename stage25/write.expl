@@ -6,7 +6,6 @@ int main() {
     begin
     write("Enter filename : ");
     read(b);
-    a = exposcall("Create",b,0);
     a = exposcall("Open",b);
     i = 0;
     while (i < 500) do
@@ -15,7 +14,6 @@ int main() {
             write("fail");
             break;
         endif;
-        write(temp);
         i = i + 1;
     endwhile;
     return 0;
