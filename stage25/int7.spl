@@ -28,7 +28,6 @@ else
     res = [pt + 11]*512 + RESOURCE_TABLE_OFFSET + 2*fd;
     if ([res] != FILE) then
         [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = -1;
-        breakpoint;
         SP = usp;
         [pt + 9] = 0;
         ireturn;
@@ -113,7 +112,6 @@ else
     multipop(R0,R1,R2,R3);
     [[PTBR + 2*((usp-1)/512)]*512 + (usp-1)%512] = 0;
 endif;
-breakpoint;
 SP = usp;
 [pt + 9] = 0;
 ireturn;

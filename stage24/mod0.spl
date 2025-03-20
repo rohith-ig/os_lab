@@ -48,7 +48,6 @@ endif;
 if (fnum == 4) then
     alias i R2;
     alias pid R3;
-    breakpoint;
     while ([FILE_STATUS_TABLE + i*4 + 0] != -1) do   
         [PROCESS_TABLE + pid*16 + 4] = WAIT_FILE;
         [PROCESS_TABLE + pid*16 + 5] = i;

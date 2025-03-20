@@ -1,0 +1,165 @@
+alias ret R0;
+alias fnum R1;
+
+if (fnum == 1) then
+    breakpoint;
+    alias pid R2;
+    alias i R3;
+    i = 3;
+    alias procp R4;
+    alias waitsem R5;
+    alias waittick R6;
+    alias maxtick R7;
+    alias final R8;
+    procp = -1;
+    waitsem = -1;
+    waittick = -1;
+    maxtick = -1;
+    final = -1;
+    while (i<MAX_PROC_NUM-1) do
+        if ([PROCESS_TABLE + i*16 + 6] == 0) then   
+            if ([PROCESS_TABLE + i*16 + 4] == WAIT_PROCESS) then
+                procp = i;
+                break;
+            endif;
+            if (procp == -1 && [PROCESS_TABLE + i*16 +4] == WAIT_SEMAPHORE) then
+                waitsem = i;
+            endif;
+            if ([PROCESS_TABLE + i*16 + 4]!=RUNNING && [PROCESS_TABLE + i*16 + 4]!=ALLOCATED && [PROCESS_TABLE + i*16 + 4]!=TERMINATED ) then
+                if ([PROCESS_TABLE + i*16] > maxtick) then
+                    maxtick = [PROCESS_TABLE + i*16];
+                    waittick = i;
+                endif;
+            endif;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (procp != -1) then
+        final = procp;
+    else
+        if (waitsem != -1) then
+            final = waitsem;
+        else
+            final = waittick;
+        endif;
+    endif;
+    if (final == -1) then
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        return;
+    endif;
+    [PROCESS_TABLE + final*16] = 0;
+    alias ptbr R9;
+    ptbr = [PROCESS_TABLE + final*16 + 14];
+    i = 2;
+    while (i < 10) do
+        if (i<4 || i>7) then
+            if ([ptbr + 2*i] != -1 && [MEMORY_FREE_LIST + [ptbr + 2*i]] == 1) then
+                multipush(R3,R8,R9);
+                R1 = 6;
+                call MEMORY_MANAGER;
+                multipop(R3,R8,R9);
+                [DISK_MAP_TABLE + final*10 + i] = ret;
+                R10 = ret;
+                multipush(R3,R8,R9,R10);
+                R1 = 1;
+                R2 = [SYSTEM_STATUS_TABLE + 1];
+                R3 = [ptbr + 2*i];
+                R4 = R10;
+                call DEVICE_MANAGER;
+                multipop(R3,R8,R9,R10);
+                multipush(R3,R8,R9,R10);
+                R1 = 2;
+                R2 = [ptbr + 2*i];
+                call MEMORY_MANAGER;
+                multipop(R3,R8,R9,R10);
+                [ptbr + 2*i] = -1;
+                [ptbr + 2*i + 1] = "0000";
+            endif;   
+        else
+            if (i>=4 && i<=7) then
+                if ([ptbr + 2*i] != -1) then
+                    multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9);
+                    R1 = 2;
+                    R2 = [ptbr + 2*i];
+                    call MEMORY_MANAGER;
+                    multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9);
+                    [ptbr + 2*i] = -1;
+                    [ptbr + 2*i + 1] = "0000";
+                endif;
+            endif;
+        endif;
+        i = i + 1;
+    endwhile;
+    print("Swapped");
+    print(final);
+    print([SYSTEM_STATUS_TABLE + 2]);
+    [PROCESS_TABLE + final*16 + 6] = 1;
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+    [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] + 1;
+    return;
+endif;
+
+if (fnum == 2) then
+    alias pid R2;
+    alias i R3;
+    alias tick R4;
+    alias final R5;
+    final = -1;
+    tick = -1;
+    i = 3;
+    while (i < 16) do   
+        if ([PROCESS_TABLE + i*16 + 6] == 1 && [PROCESS_TABLE + i*16 + 4] == READY) then
+            if ([PROCESS_TABLE + i*16] > tick) then
+                tick = [PROCESS_TABLE + i*16];
+                final = i;
+            endif;
+        endif;
+        i = i + 1;
+    endwhile;
+    if (final == -1) then
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        return;
+    endif;
+    [PROCESS_TABLE + final*16] = 0;
+    i = 2;
+    while (i<10) do
+        if (i<4 || i>7) then
+            alias block R6;
+            block = [DISK_MAP_TABLE + final*10 + i];
+            if (block == -1) then
+                i = i + 1;
+                continue;
+            endif;
+            multipush(R1,R2,R3,R4,R5,R6);
+            R1 = 1;
+            call MEMORY_MANAGER;
+            multipop(R1,R2,R3,R4,R5,R6);
+            alias ptbr R7;
+            ptbr = [PROCESS_TABLE + final*16 + 14];
+            [ptbr + 2*i] = R0;
+            [ptbr + 2*i + 1] = "0110";
+            multipush(R3,R5,R6);
+            R1 = 2;
+            R2 = SWAPPER_DAEMON;
+            R3 = R0;
+            R4 = block;
+            call DEVICE_MANAGER;
+            multipop(R3,R5,R6);
+            multipush(R3,R5,R6);
+            R1 = 4;
+            R2 = block;
+            R3 = SWAPPER_DAEMON;
+            call MEMORY_MANAGER;
+            multipop(R3,R5,R6);
+            [DISK_MAP_TABLE + final*10 + i] = -1;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    [PROCESS_TABLE + final*16 + 6] = 0;
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+    [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] - 1;
+    print("Swapped IN");
+    print(final);
+    return;
+endif;

@@ -31,6 +31,7 @@ while (i < MAX_USER_NUM) do
     endif;
 endwhile;
 if (i == MAX_USER_NUM) then
+    breakpoint;
     [pt + 9] = 0;
     [ret] = -1;
     SP = usp;
@@ -41,12 +42,17 @@ pwd = [[PTBR + 2*((usp-3)/512)]*512 + (usp-3)%512];
 encrypt R4;
 
 if (pwd != [USER_TABLE + i*2 + 1]) then
+    print(pwd);
+    print([USER_TABLE + i*2 + 1]);
     [pt + 9] = 0;
     [ret] = -1;
     SP = usp;
     ireturn;
 endif; 
-breakpoint;
+
+print("ok");
+
+
 [PROCESS_TABLE + 32 + 4] = CREATED;
 [PROCESS_TABLE + 32 + 3] = i;
 

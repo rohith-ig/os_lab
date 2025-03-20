@@ -1,0 +1,70 @@
+alias currentPID R0;
+alias pt R1;
+
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+pt = PROCESS_TABLE + 16 * currentPID;
+
+multipush(BP);
+
+[pt + 12] = SP % 512;
+[pt + 14] = PTBR;
+[pt + 15] = PTLR;
+
+alias i R2;
+alias state R3;
+alias newPID R4;
+
+if ([SYSTEM_STATUS_TABLE + 5] != 0) then
+    if ([PROCESS_TABLE + 15 * 16 + 4] == WAIT_DISK) then
+        i = 0;
+    else
+        i = SWAPPER_DAEMON;
+    endif;
+else
+    i = currentPID + 1;
+    while (i < 16) do
+        state = [PROCESS_TABLE + i * 16 + 4];
+        if ((state == READY || state == CREATED) && [PROCESS_TABLE + i * 16 + 6] != 1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if (i == 16) then
+        i = 1;
+        while (i < currentPID) do
+            state = [PROCESS_TABLE + i * 16 + 4];
+            if ((state == CREATED || state == READY) && [PROCESS_TABLE + i * 16 + 6] != 1) then
+                break;
+            endif;
+            i = i + 1;
+        endwhile;
+    endif;
+
+    if (i == currentPID) then
+        i = 0;
+    endif;
+endif;
+
+newPID = i;
+
+pt = PROCESS_TABLE + newPID * 16;
+SP = [pt + 11] * 512 + [pt + 12];
+PTBR = [pt + 14];
+PTLR = [pt + 15];
+
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+if ([pt + 4] == CREATED) then
+    SP = [pt + 13];
+    BP = [[pt + 11] * 512];
+    [pt + 4] = RUNNING;
+    [pt + 9] = 0; // mode flag
+    ireturn;
+endif;
+
+[pt + 4] = RUNNING;
+
+multipop(BP);
+
+return;
